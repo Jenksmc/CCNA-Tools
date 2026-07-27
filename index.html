@@ -259,8 +259,8 @@ WAN-B, 2</textarea>
 
     const $ = (id) => document.getElementById(id);
     const IPv4_MAX = 0xffffffff;
-    const MAX_UNICAST_PRACTICE_FIRST_OCTET = 223;
-    const OCTET_BOUNDARY_BITS = [7, 15, 23];
+    const PRACTICE_FIRST_OCTET_CHOICES_BEFORE_MULTICAST = 223;
+    const OCTET_END_BIT_INDICES = [7, 15, 23];
     const EUI64_GROUP_START_BYTES = [0, 2, 4, 6];
     const IPV6_UNIQUE_LOCAL_FC00_TOP7_BITS = 0b1111110n;
     const SOLICITED_NODE_PREFIX = 0xff0200000000000000000001ff000000n;
@@ -325,9 +325,9 @@ WAN-B, 2</textarea>
       const usable = prefix === 32 ? 1 : prefix === 31 ? 2 : Math.max(0, total - 2);
       const first = prefix >= 31 ? network : (network + 1) >>> 0;
       const last = prefix >= 31 ? broadcast : (broadcast - 1) >>> 0;
-      const interestingOctet = prefix === 32 ? 'none (/32 host route)' : Math.floor(prefix / 8) + 1;
+      const interestingOctetDisplay = prefix === 32 ? 'none (/32 host route)' : Math.floor(prefix / 8) + 1;
       const blockSize = prefix % 8 === 0 ? 256 : 2 ** (8 - (prefix % 8));
-      return { mask, wildcard, network, broadcast, total, usable, first, last, interestingOctet, blockSize };
+      return { mask, wildcard, network, broadcast, total, usable, first, last, interestingOctetDisplay, blockSize };
     }
     function ipv4Class(ip) {
       const first = ip >>> 24;
@@ -360,7 +360,7 @@ WAN-B, 2</textarea>
         $('ipv4Result').innerHTML = [
           metric('Mask', ipToString(info.mask)), metric('Wildcard', ipToString(info.wildcard)), metric('Network', ipToString(info.network)),
           metric('First usable', ipToString(info.first)), metric('Last usable', ipToString(info.last)), metric('Broadcast', ipToString(info.broadcast)),
-          metric('Block size', `${info.blockSize} in octet ${info.interestingOctet}`), metric('Usable hosts', info.usable.toLocaleString()), metric('Class', ipv4Class(ip))
+          metric('Block size', `${info.blockSize} in octet ${info.interestingOctetDisplay}`), metric('Usable hosts', info.usable.toLocaleString()), metric('Class', ipv4Class(ip))
         ].join('');
         $('ipv4Flags').innerHTML = ipv4Flags(ip).map((f) => `<span class="pill">${escapeHtml(f)}</span>`).join('');
         renderBitRuler(prefix, ip);
@@ -375,7 +375,7 @@ WAN-B, 2</textarea>
       $('bitRuler').innerHTML = Array.from({ length: 32 }, (_, i) => {
         const bit = (ip >>> (31 - i)) & 1;
         const cls = i < prefix ? 'net' : 'host';
-        return `<div class="bit ${cls} ${OCTET_BOUNDARY_BITS.includes(i) ? 'break' : ''}" title="bit ${i + 1}: ${cls}">${bit}</div>`;
+        return `<div class="bit ${cls} ${OCTET_END_BIT_INDICES.includes(i) ? 'break' : ''}" title="bit ${i + 1}: ${cls}">${bit}</div>`;
       }).join('');
     }
 
@@ -437,7 +437,7 @@ WAN-B, 2</textarea>
 
     const questionTypes = ['network', 'broadcast', 'first usable', 'last usable', 'mask', 'wildcard'];
     function randomIp() {
-      const first = 1 + Math.floor(Math.random() * MAX_UNICAST_PRACTICE_FIRST_OCTET);
+      const first = 1 + Math.floor(Math.random() * PRACTICE_FIRST_OCTET_CHOICES_BEFORE_MULTICAST);
       const second = Math.floor(Math.random() * 256);
       const third = Math.floor(Math.random() * 256);
       const fourth = Math.floor(Math.random() * 256);
@@ -552,7 +552,7 @@ WAN-B, 2</textarea>
         const flipped = mac[0] ^ 0x02;
         const eui = [flipped, mac[1], mac[2], 0xff, 0xfe, mac[3], mac[4], mac[5]];
         const groups = EUI64_GROUP_START_BYTES.map((i) => ((eui[i] << 8) | eui[i + 1]).toString(16).padStart(4, '0'));
-        $('euiOut').textContent = `Original first byte: ${mac[0].toString(2).padStart(8, '0')}\nFlip U/L bit 7:     ${flipped.toString(2).padStart(8, '0')}\nInsert ff:fe in the middle\nInterface ID: ${groups.join(':')}`;
+        $('euiOut').textContent = `Original first byte: ${mac[0].toString(2).padStart(8, '0')}\nFlip U/L bit (bit 1): ${flipped.toString(2).padStart(8, '0')}\nInsert ff:fe in the middle\nInterface ID: ${groups.join(':')}`;
       } catch (err) { $('euiError').textContent = err.message; $('euiOut').textContent = ''; }
     }
     function renderSolicited() {
