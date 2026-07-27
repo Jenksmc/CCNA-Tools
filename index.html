@@ -259,6 +259,8 @@ WAN-B, 2</textarea>
 
     const $ = (id) => document.getElementById(id);
     const IPv4_MAX = 0xffffffff;
+    const IPV6_UNIQUE_LOCAL_TOP7 = 0x7en;
+    const SOLICITED_NODE_PREFIX = 0xff0200000000000000000001ff000000n;
     let score = 0, attempts = 0, streak = 0, currentQuestion = null;
 
     document.querySelectorAll('.tab').forEach((tab) => {
@@ -415,7 +417,7 @@ WAN-B, 2</textarea>
         const rows = [];
         for (const need of needs) {
           const size = 2 ** (32 - need.prefix);
-          cursor = Math.ceil(cursor / size) * size;
+          cursor += (size - (cursor % size)) % size;
           const end = cursor + size - 1;
           if (end > parent.broadcast) throw new Error('Requirements do not fit in the parent block.');
           const info = subnetInfo(cursor, need.prefix);
@@ -506,7 +508,7 @@ WAN-B, 2</textarea>
       if (big === 1n) return 'Loopback (::1)';
       if ((big >> 120n) === 0xffn) return 'Multicast (ff00::/8)';
       if ((big >> 118n) === 0b1111111010n) return 'Link-local unicast (fe80::/10)';
-      if ((big >> 121n) === 0xfcn >> 1n) return 'Unique local (fc00::/7)';
+      if ((big >> 121n) === IPV6_UNIQUE_LOCAL_TOP7) return 'Unique local (fc00::/7)';
       if ((big >> 96n) === 0x20010db8n) return 'Documentation (2001:db8::/32)';
       if ((big >> 125n) === 0b001n) return 'Global unicast (2000::/3)';
       return 'Reserved or special-purpose';
@@ -543,7 +545,7 @@ WAN-B, 2</textarea>
         const groups = parseIPv6($('solAddr').value);
         const big = groupsToBig(groups);
         const last24 = big & 0xffffffn;
-        const mcast = (0xff0200000000000000000001ff000000n | last24);
+        const mcast = SOLICITED_NODE_PREFIX | last24;
         const mGroups = bigToGroups(mcast);
         const bytes = [0x33, 0x33, 0xff, Number((last24 >> 16n) & 255n), Number((last24 >> 8n) & 255n), Number(last24 & 255n)];
         $('solOut').innerHTML = [metric('Solicited-node multicast', compressIPv6(mGroups)), metric('Mapped L2 multicast', macFormats(bytes).colon)].join('');
