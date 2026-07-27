@@ -259,8 +259,10 @@ WAN-B, 2</textarea>
 
     const $ = (id) => document.getElementById(id);
     const IPv4_MAX = 0xffffffff;
-    const MAX_UNICAST_FIRST_OCTET = 223;
-    const IPV6_UNIQUE_LOCAL_PREFIX_TOP7BITS = 0b1111110n;
+    const MAX_UNICAST_PRACTICE_FIRST_OCTET = 223;
+    const OCTET_BOUNDARY_BITS = [7, 15, 23];
+    const EUI64_GROUP_START_BYTES = [0, 2, 4, 6];
+    const IPV6_UNIQUE_LOCAL_FC00_TOP7_BITS = 0b1111110n;
     const SOLICITED_NODE_PREFIX = 0xff0200000000000000000001ff000000n;
     const HTML_ENTITIES = {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'};
     let score = 0, attempts = 0, streak = 0, currentQuestion = null;
@@ -373,7 +375,7 @@ WAN-B, 2</textarea>
       $('bitRuler').innerHTML = Array.from({ length: 32 }, (_, i) => {
         const bit = (ip >>> (31 - i)) & 1;
         const cls = i < prefix ? 'net' : 'host';
-        return `<div class="bit ${cls} ${[7,15,23].includes(i) ? 'break' : ''}" title="bit ${i + 1}: ${cls}">${bit}</div>`;
+        return `<div class="bit ${cls} ${OCTET_BOUNDARY_BITS.includes(i) ? 'break' : ''}" title="bit ${i + 1}: ${cls}">${bit}</div>`;
       }).join('');
     }
 
@@ -435,7 +437,7 @@ WAN-B, 2</textarea>
 
     const questionTypes = ['network', 'broadcast', 'first usable', 'last usable', 'mask', 'wildcard'];
     function randomIp() {
-      const first = Math.floor(Math.random() * MAX_UNICAST_FIRST_OCTET) + 1;
+      const first = 1 + Math.floor(Math.random() * MAX_UNICAST_PRACTICE_FIRST_OCTET);
       const second = Math.floor(Math.random() * 256);
       const third = Math.floor(Math.random() * 256);
       const fourth = Math.floor(Math.random() * 256);
@@ -456,7 +458,10 @@ WAN-B, 2</textarea>
       $('practiceWork').textContent = workMath(currentQuestion);
     }
     function workMath(q) {
-      const p = q.prefix, octet = Math.floor(p / 8) + 1, borrowed = p % 8, block = borrowed === 0 ? 256 : 2 ** (8 - borrowed);
+      const p = q.prefix;
+      const octet = Math.floor(p / 8) + 1;
+      const borrowed = p % 8;
+      const block = borrowed === 0 ? 256 : 2 ** (8 - borrowed);
       return `Prefix /${p}\nInteresting octet: ${p === 32 ? 'none (/32)' : octet}\nBlock size: ${borrowed === 0 ? '256 (boundary prefix)' : `256 - mask octet, or 2^(8-${borrowed}) = ${block}`}\nNetwork: ${ipToString(q.info.network)}\nBroadcast: ${ipToString(q.info.broadcast)}\nUsable range: ${ipToString(q.info.first)} - ${ipToString(q.info.last)}\nMask: ${ipToString(q.info.mask)}\nWildcard: ${ipToString(q.info.wildcard)}`;
     }
     function checkPractice() {
@@ -519,7 +524,7 @@ WAN-B, 2</textarea>
       if (big === 1n) return 'Loopback (::1)';
       if ((big >> 120n) === 0xffn) return 'Multicast (ff00::/8)';
       if ((big >> 118n) === 0b1111111010n) return 'Link-local unicast (fe80::/10)';
-      if ((big >> 121n) === IPV6_UNIQUE_LOCAL_PREFIX_TOP7BITS) return 'Unique local (fc00::/7)';
+      if ((big >> 121n) === IPV6_UNIQUE_LOCAL_FC00_TOP7_BITS) return 'Unique local (fc00::/7)';
       if ((big >> 96n) === 0x20010db8n) return 'Documentation (2001:db8::/32)';
       if ((big >> 125n) === 0b001n) return 'Global unicast (2000::/3)';
       return 'Reserved or special-purpose';
@@ -546,7 +551,7 @@ WAN-B, 2</textarea>
         const mac = parseMac($('euiMac').value);
         const flipped = mac[0] ^ 0x02;
         const eui = [flipped, mac[1], mac[2], 0xff, 0xfe, mac[3], mac[4], mac[5]];
-        const groups = [0, 2, 4, 6].map((i) => ((eui[i] << 8) | eui[i + 1]).toString(16).padStart(4, '0'));
+        const groups = EUI64_GROUP_START_BYTES.map((i) => ((eui[i] << 8) | eui[i + 1]).toString(16).padStart(4, '0'));
         $('euiOut').textContent = `Original first byte: ${mac[0].toString(2).padStart(8, '0')}\nFlip U/L bit 7:     ${flipped.toString(2).padStart(8, '0')}\nInsert ff:fe in the middle\nInterface ID: ${groups.join(':')}`;
       } catch (err) { $('euiError').textContent = err.message; $('euiOut').textContent = ''; }
     }
@@ -579,7 +584,7 @@ WAN-B, 2</textarea>
         if (child < parent.length || child > 128) throw new Error('Child length must be at least the parent length and no larger than /128.');
         if (count < 1 || count > 64) throw new Error('Show count must be between 1 and 64.');
         const total = 1n << BigInt(child - parent.length);
-        if (BigInt(count) > total) throw new Error(`Parent only supports ${total.toString()} child prefixes.`);
+        if (BigInt(count) > total) throw new Error(`Parent /${parent.length} only supports ${total.toString()} child /${child} prefixes, but ${count} were requested.`);
         const step = 1n << BigInt(128 - child);
         const rows = [];
         for (let i = 0; i < count; i++) rows.push([i + 1, `${compressIPv6(bigToGroups(parent.network + BigInt(i) * step))}/${child}`]);
