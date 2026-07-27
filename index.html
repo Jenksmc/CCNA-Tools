@@ -260,8 +260,9 @@ WAN-B, 2</textarea>
     const $ = (id) => document.getElementById(id);
     const IPv4_MAX = 0xffffffff;
     const MAX_UNICAST_FIRST_OCTET = 223;
-    const IPV6_UNIQUE_LOCAL_PREFIX_TOP7BITS = 0x7en;
+    const IPV6_UNIQUE_LOCAL_PREFIX_TOP7BITS = 0b1111110n;
     const SOLICITED_NODE_PREFIX = 0xff0200000000000000000001ff000000n;
+    const HTML_ENTITIES = {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'};
     let score = 0, attempts = 0, streak = 0, currentQuestion = null;
 
     document.querySelectorAll('.tab').forEach((tab) => {
@@ -275,7 +276,7 @@ WAN-B, 2</textarea>
       return `<div class="metric"><span>${escapeHtml(label)}</span><strong>${escapeHtml(String(value))}</strong></div>`;
     }
     function escapeHtml(value) {
-      return String(value).replace(/[&<>'"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+      return String(value).replace(/[&<>'"]/g, (c) => HTML_ENTITIES[c]);
     }
     function parseIPv4(input) {
       const parts = String(input).trim().split('.');
@@ -433,7 +434,13 @@ WAN-B, 2</textarea>
     }
 
     const questionTypes = ['network', 'broadcast', 'first usable', 'last usable', 'mask', 'wildcard'];
-    function randomIp() { return ((Math.floor(Math.random() * MAX_UNICAST_FIRST_OCTET) + 1) << 24 | Math.floor(Math.random() * 256) << 16 | Math.floor(Math.random() * 256) << 8 | Math.floor(Math.random() * 256)) >>> 0; }
+    function randomIp() {
+      const first = Math.floor(Math.random() * MAX_UNICAST_FIRST_OCTET) + 1;
+      const second = Math.floor(Math.random() * 256);
+      const third = Math.floor(Math.random() * 256);
+      const fourth = Math.floor(Math.random() * 256);
+      return ((first << 24) | (second << 16) | (third << 8) | fourth) >>> 0;
+    }
     function newPracticeQuestion() {
       const min = Number($('practiceMin').value), max = Number($('practiceMax').value);
       if (min < 1 || max > 32 || min > max) { $('practiceFeedback').innerHTML = '<p class="error">Use a valid prefix range from /1 to /32.</p>'; return; }
@@ -664,7 +671,17 @@ WAN-B, 2</textarea>
     $('numBtn').addEventListener('click', renderNumber);
     $('refFilter').addEventListener('input', renderRefs);
 
-    renderIPv4(); renderSplit(); renderVlsm(); renderIPv6(); renderEui(); renderSolicited(); renderPlan(); renderMask(); renderMac(); renderNumber(); renderRefs();
+    renderIPv4();
+    renderSplit();
+    renderVlsm();
+    renderIPv6();
+    renderEui();
+    renderSolicited();
+    renderPlan();
+    renderMask();
+    renderMac();
+    renderNumber();
+    renderRefs();
   </script>
 </body>
 </html>
