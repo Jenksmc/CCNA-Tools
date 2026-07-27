@@ -28,10 +28,21 @@ WAN 2</textarea><button class="btn secondary" id="vlsmBtn">Allocate largest firs
 </main>
 <script>
 'use strict';
-const $=id=>document.getElementById(id), TWO32=4294967296;
+const $=id=>document.getElementById(id), TWO_POW_32=4294967296;
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.tab').forEach(x=>x.setAttribute('aria-selected','false'));document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));b.setAttribute('aria-selected','true');$(b.dataset.tab).classList.add('active')}));
 function err(id,msg=''){ $(id).textContent=msg; }
-function ipToInt(ip){let p=String(ip).trim().split('.');if(p.length!==4)throw Error('Enter a valid dotted decimal IPv4 address.');let n=0;for(const x of p){if(!/^\d+$/.test(x))throw Error('IPv4 octets must be decimal numbers.');let v=Number(x);if(v<0||v>255)throw Error('IPv4 octets must be 0 through 255.');n=(n*256+v)>>>0}return n>>>0}
+function ipToInt(ip){
+  let octets=String(ip).trim().split('.');
+  if(octets.length!==4)throw Error('Enter a valid dotted decimal IPv4 address.');
+  let n=0;
+  for(const octet of octets){
+    if(!/^\d+$/.test(octet))throw Error('IPv4 octets must be decimal numbers.');
+    let value=Number(octet);
+    if(value<0||value>255)throw Error('IPv4 octets must be 0 through 255.');
+    n=(n*256+value)>>>0;
+  }
+  return n>>>0;
+}
 function intToIp(n){return[(n>>>24)&255,(n>>>16)&255,(n>>>8)&255,n&255].join('.')}
 function maskFromPrefix(p){return p===0?0:(0xffffffff << (32-p))>>>0}
 function parseCidr(s){let m=String(s).trim().match(/^([^/]+)\/(\d{1,2})$/);if(!m)throw Error('Use CIDR format like 192.168.1.0/24.');let p=Number(m[2]);if(p<0||p>32)throw Error('IPv4 prefix must be /0 through /32.');let ip=ipToInt(m[1]), mask=maskFromPrefix(p);return{ip,p,network:(ip&mask)>>>0,mask}}
@@ -81,7 +92,7 @@ function updateIpv4(){
 ['ipInput','prefixInput'].forEach(id=>$(id).addEventListener('input',updateIpv4));
 function tableRow(cells){return '<tr>'+cells.map(c=>`<td>${c}</td>`).join('')+'</tr>'}
 function renderSubnetRows(tbody, rows){$(tbody).innerHTML=rows.map((r,i)=>tableRow([i+1,intToIp(r.network)+'/'+r.p,intToIp(r.first),intToIp(r.last),intToIp(r.broadcast),r.usable.toLocaleString()])).join('')}
-$('splitBtn').onclick=()=>{
+function splitSubnets(){
   try{
     err('splitErr');
     let c=parseCidr($('parentCidr').value);
@@ -104,7 +115,8 @@ $('splitBtn').onclick=()=>{
     err('splitErr',e.message);
     $('splitRows').innerHTML='';
   }
-};
+}
+$('splitBtn').onclick=splitSubnets;
 function neededPrefix(hosts){
   if(hosts<=0)throw Error('Host counts must be positive.');
   for(let p=32;p>=0;p--){
@@ -127,7 +139,7 @@ function parseVlsmRequirements(text){
     return{name:m[1],hosts,p:neededPrefix(hosts)};
   }).sort((a,b)=>a.p-b.p);
 }
-$('vlsmBtn').onclick=()=>{
+function allocateVlsm(){
   try{
     err('vlsmErr');
     let parent=parseCidr($('vlsmParent').value);
@@ -151,9 +163,10 @@ $('vlsmBtn').onclick=()=>{
     err('vlsmErr',e.message);
     $('vlsmRows').innerHTML='';
   }
-};
+}
+$('vlsmBtn').onclick=allocateVlsm;
 let drill=null, score=0, asked=0, streak=0;
-function randIp(){return ((Math.random()*TWO32)>>>0)}
+function randomIpv4(){return ((Math.random()*TWO_POW_32)>>>0)}
 function newDrillQuestion(){
   let min=Number($('drillMin').value);
   let max=Number($('drillMax').value);
@@ -161,7 +174,7 @@ function newDrillQuestion(){
   min=Math.max(1,Math.min(32,min));
   max=Math.max(1,Math.min(32,max));
   let p=min+Math.floor(Math.random()*(max-min+1));
-  let ip=randIp();
+  let ip=randomIpv4();
   let s=subnetInfo(ip,p);
   drill={ip,p,s};
   $('question').textContent=`Find network details for ${intToIp(ip)}/${p}`;
@@ -206,7 +219,8 @@ $('checkQ').onclick=()=>{
 };
 function parseIPv6(addr){
   addr=String(addr).trim().toLowerCase();
-  if(!addr||addr.includes(':::'))throw Error('Enter a valid IPv6 address.');
+  if(!addr)throw Error('Enter a valid IPv6 address.');
+  if(addr.includes(':::'))throw Error('IPv6 addresses cannot contain triple colons (:::).');
   if(addr.includes('.')){
     let last=addr.substring(addr.lastIndexOf(':')+1);
     let n=ipToInt(last);
@@ -253,8 +267,14 @@ function compressIPv6(a){
   return out||'::';
 }
 function ipv6Type(h){let first=h[0];if(h.every(x=>x===0))return'Unspecified';if(h.slice(0,7).every(x=>x===0)&&h[7]===1)return'Loopback';if((first&0xffc0)===0xfe80)return'Link-local unicast';if((first&0xfe00)===0xfc00)return'Unique local (ULA)';if((first&0xff00)===0xff00)return'Multicast';if(first>=0x2000&&first<=0x3fff)return h[0]===0x2001&&h[1]===0xdb8?'Documentation (2001:db8::/32)':'Global unicast';return'Other/reserved'}
-function macBytes(s){let hex=String(s).toLowerCase().replace(/[^0-9a-f]/g,'');if(hex.length!==12)throw Error('Enter a 48-bit MAC address.');return hex.match(/../g).map(x=>parseInt(x,16))}
-function fmtMac(b,sep=':'){return b.map(x=>x.toString(16).padStart(2,'0')).join(sep)}
+function macBytes(macString){
+  let hex=String(macString).toLowerCase().replace(/[^0-9a-f]/g,'');
+  if(hex.length!==12)throw Error('Enter a 48-bit MAC address.');
+  return hex.match(/../g).map(x=>parseInt(x,16));
+}
+function fmtMac(bytes,sep=':'){
+  return bytes.map(x=>x.toString(16).padStart(2,'0')).join(sep);
+}
 function analyzeIPv6(){
   try{
     err('ipv6Err');
@@ -330,7 +350,7 @@ function isContiguousMask(n){
 function prefixLengthFromMask(n){
   return n.toString(2).padStart(32,'0').replace(/0/g,'').length;
 }
-$('maskBtn').onclick=()=>{
+function convertMask(){
   try{
     err('maskErr');
     let value=$('maskConv').value.trim();
@@ -360,7 +380,8 @@ $('maskBtn').onclick=()=>{
     err('maskErr',e.message);
     $('maskResults').innerHTML='';
   }
-};
+}
+$('maskBtn').onclick=convertMask;
 function convertMac(){
   try{
     err('macErr');
@@ -422,12 +443,12 @@ $('refFilter').addEventListener('input',renderRefs);
 function initializePage(){
   updateIpv4();
   renderRefs();
-  $('splitBtn').onclick();
-  $('vlsmBtn').onclick();
+  splitSubnets();
+  allocateVlsm();
   analyzeIPv6();
   convertEui64();
   planIPv6Prefixes();
-  $('maskBtn').onclick();
+  convertMask();
   convertMac();
   convertNumber();
 }
