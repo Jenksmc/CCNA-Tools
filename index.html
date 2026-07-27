@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>CCNA Networking Toolkit</title>
 <style>
-:root{color-scheme:light dark;--bg:#f5f7fb;--panel:#fff;--text:#152033;--muted:#5b677a;--line:#d9e0ea;--brand:#1769e0;--brand2:#10a37f;--bad:#c62828;--ok:#087f5b;--warn:#a15c00;--chip:#eaf1ff;--shadow:0 12px 30px #1122  }
-@media (prefers-color-scheme:dark){:root{--bg:#10141c;--panel:#171d29;--text:#edf2ff;--muted:#a8b3c7;--line:#30394a;--brand:#75a7ff;--brand2:#3dd6ae;--bad:#ff8a80;--ok:#69dbb2;--warn:#ffd166;--chip:#22304a;--shadow:0 12px 30px #0006}}
+:root{color-scheme:light dark;--bg:#f5f7fb;--panel:#fff;--text:#152033;--muted:#5b677a;--line:#d9e0ea;--brand:#1769e0;--brand2:#10a37f;--bad:#c62828;--ok:#087f5b;--warn:#a15c00;--chip:#eaf1ff;--shadow:0 12px 30px #11223322  }
+@media (prefers-color-scheme:dark){:root{--bg:#10141c;--panel:#171d29;--text:#edf2ff;--muted:#a8b3c7;--line:#30394a;--brand:#75a7ff;--brand2:#3dd6ae;--bad:#ff8a80;--ok:#69dbb2;--warn:#ffd166;--chip:#22304a;--shadow:0 12px 30px #00000066}}
 *{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,var(--bg),color-mix(in srgb,var(--bg),var(--brand) 7%));color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Arial,sans-serif}header{padding:28px clamp(16px,4vw,44px) 14px}h1{margin:0 0 6px;font-size:clamp(28px,4vw,46px)}h2{margin:0 0 14px;font-size:24px}h3{margin:18px 0 10px}.sub{color:var(--muted);max-width:950px}.wrap{padding:0 clamp(16px,4vw,44px) 40px}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 18px}.tab{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:999px;padding:10px 14px;cursor:pointer;box-shadow:var(--shadow)}.tab[aria-selected=true]{background:var(--brand);border-color:var(--brand);color:white}.panel{display:none;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:18px;box-shadow:var(--shadow)}.panel.active{display:block}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}.wide{grid-column:1/-1}.card{border:1px solid var(--line);border-radius:16px;padding:14px;background:color-mix(in srgb,var(--panel),var(--bg) 24%)}label{display:block;font-weight:700;margin:0 0 5px}input,select,textarea,button{font:inherit}input,select,textarea{width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--text)}input[type=range]{padding:0}textarea{min-height:120px;resize:vertical}.row{display:flex;gap:10px;align-items:end;flex-wrap:wrap}.row>*{flex:1 1 190px}.btn{background:var(--brand);color:white;border:0;border-radius:10px;padding:10px 13px;cursor:pointer}.btn.secondary{background:var(--brand2)}.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}.results{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:12px}.metric{padding:12px;border:1px solid var(--line);border-radius:14px;background:var(--panel)}.metric b{display:block;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}.metric span{font-size:18px;word-break:break-word}.error{color:var(--bad);font-weight:700;margin-top:8px}.ok{color:var(--ok)}.muted{color:var(--muted)}.bits{display:grid;grid-template-columns:repeat(32,1fr);gap:2px;margin:14px 0 8px}.bit{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;text-align:center;font-size:12px;padding:6px 0;border-radius:6px;background:var(--chip);border:1px solid var(--line)}.bit.net{background:var(--brand);color:white}.octets{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;color:var(--muted);font-size:12px;text-align:center}.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:14px}table{width:100%;border-collapse:collapse;min-width:620px}th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{background:color-mix(in srgb,var(--panel),var(--brand) 10%);position:sticky;top:0}tr:last-child td{border-bottom:0}.pill{display:inline-block;background:var(--chip);border:1px solid var(--line);border-radius:999px;padding:3px 8px;margin:2px}.answer{margin-top:10px;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--panel)}.good{border-color:var(--ok)}.bad{border-color:var(--bad)}details{margin-top:12px}summary{cursor:pointer;font-weight:700}code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}.small{font-size:13px}.split{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:760px){.split{grid-template-columns:1fr}.bits{grid-template-columns:repeat(16,1fr)}.bit{font-size:11px}.panel{padding:13px}table{min-width:520px}}
 </style>
 </head>
@@ -36,24 +36,194 @@ function intToIp(n){return[(n>>>24)&255,(n>>>16)&255,(n>>>8)&255,n&255].join('.'
 function maskFromPrefix(p){return p===0?0:(0xffffffff << (32-p))>>>0}
 function parseCidr(s){let m=String(s).trim().match(/^([^/]+)\/(\d{1,2})$/);if(!m)throw Error('Use CIDR format like 192.168.1.0/24.');let p=Number(m[2]);if(p<0||p>32)throw Error('IPv4 prefix must be /0 through /32.');let ip=ipToInt(m[1]), mask=maskFromPrefix(p);return{ip,p,network:(ip&mask)>>>0,mask}}
 function subnetInfo(ip,p){let mask=maskFromPrefix(p), wildcard=(~mask)>>>0, network=(ip&mask)>>>0, broadcast=(network|wildcard)>>>0;let first=p===32?network:p===31?network:network+1, last=p===32?network:p===31?broadcast:broadcast-1;let usable=p===32?1:p===31?2:Math.max(0,2**(32-p)-2);return{mask,wildcard,network,broadcast,first,last,usable}}
-function block(p){if(p===32)return{size:1,octet:4};let host=32-p, size=2**(host%8||8), octet=Math.floor(p/8)+1; if(p%8===0){size=256;octet=Math.min(4,octet+1)} return{size,octet:Math.min(4,octet)}}
+function block(p){
+  if(p===32)return{size:1,octet:4};
+  let hostBits=32-p;
+  let size=2**(hostBits%8||8);
+  let octet=Math.floor(p/8)+1;
+  if(p%8===0){
+    size=256;
+    octet=Math.min(4,octet+1);
+  }
+  return{size,octet:Math.min(4,octet)};
+}
 function ipv4Class(n){let f=n>>>24;return f<128?'A':f<192?'B':f<224?'C':f<240?'D multicast':'E reserved'}
 function ipv4Scope(n){const inr=(a,b)=>n>=ipToInt(a)&&n<=ipToInt(b);let tags=[];if(inr('10.0.0.0','10.255.255.255')||inr('172.16.0.0','172.31.255.255')||inr('192.168.0.0','192.168.255.255'))tags.push('RFC 1918 private');if(inr('169.254.0.0','169.254.255.255'))tags.push('APIPA');if(inr('100.64.0.0','100.127.255.255'))tags.push('CGNAT');if(inr('127.0.0.0','127.255.255.255'))tags.push('Loopback');return tags.length?tags.join(', '):'Public'}
 function metric(k,v){return `<div class="metric"><b>${k}</b><span>${v}</span></div>`}
-function updateIpv4(){try{err('ipv4Err');let ip=ipToInt($('ipInput').value), p=Number($('prefixInput').value);$('prefixLabel').textContent='/'+p;let info=subnetInfo(ip,p), b=block(p);$('bitRuler').innerHTML=Array.from({length:32},(_,i)=>`<div class="bit ${i<p?'net':''}">${(ip>>>(31-i))&1}</div>`).join('');$('ipv4Results').innerHTML=[metric('Mask',intToIp(info.mask)),metric('Wildcard',intToIp(info.wildcard)),metric('Network',intToIp(info.network)+'/'+p),metric('First usable',intToIp(info.first)),metric('Last usable',intToIp(info.last)),metric('Broadcast',intToIp(info.broadcast)),metric('Block size',b.size+' in octet '+b.octet),metric('Usable hosts',info.usable.toLocaleString()),metric('Class',ipv4Class(ip)),metric('Scope',ipv4Scope(ip))].join('')}catch(e){err('ipv4Err',e.message);$('ipv4Results').innerHTML=''}}
+function updateIpv4(){
+  try{
+    err('ipv4Err');
+    let ip=ipToInt($('ipInput').value);
+    let p=Number($('prefixInput').value);
+    $('prefixLabel').textContent='/'+p;
+    let info=subnetInfo(ip,p);
+    let b=block(p);
+    $('bitRuler').innerHTML=Array.from({length:32},(_,i)=>
+      `<div class="bit ${i<p?'net':''}">${(ip>>>(31-i))&1}</div>`
+    ).join('');
+    $('ipv4Results').innerHTML=[
+      metric('Mask',intToIp(info.mask)),
+      metric('Wildcard',intToIp(info.wildcard)),
+      metric('Network',intToIp(info.network)+'/'+p),
+      metric('First usable',intToIp(info.first)),
+      metric('Last usable',intToIp(info.last)),
+      metric('Broadcast',intToIp(info.broadcast)),
+      metric('Block size',b.size+' in octet '+b.octet),
+      metric('Usable hosts',info.usable.toLocaleString()),
+      metric('Class',ipv4Class(ip)),
+      metric('Scope',ipv4Scope(ip))
+    ].join('');
+  }catch(e){
+    err('ipv4Err',e.message);
+    $('ipv4Results').innerHTML='';
+  }
+}
 ['ipInput','prefixInput'].forEach(id=>$(id).addEventListener('input',updateIpv4));
 function tableRow(cells){return '<tr>'+cells.map(c=>`<td>${c}</td>`).join('')+'</tr>'}
 function renderSubnetRows(tbody, rows){$(tbody).innerHTML=rows.map((r,i)=>tableRow([i+1,intToIp(r.network)+'/'+r.p,intToIp(r.first),intToIp(r.last),intToIp(r.broadcast),r.usable.toLocaleString()])).join('')}
-$('splitBtn').onclick=()=>{try{err('splitErr');let c=parseCidr($('parentCidr').value), count=Number($('splitCount').value);if(!Number.isInteger(count)||count<1)throw Error('Subnet count must be a positive integer.');let bits=Math.ceil(Math.log2(count)), np=c.p+bits;if(np>32)throw Error('That many subnets will not fit in the parent block.');let step=2**(32-np), total=2**bits, rows=[];for(let i=0;i<total;i++){let net=(c.network+i*step)>>>0;if(net>c.network+(2**(32-c.p)-1))break;rows.push({p:np,...subnetInfo(net,np)})}renderSubnetRows('splitRows',rows)}catch(e){err('splitErr',e.message);$('splitRows').innerHTML=''}};
+$('splitBtn').onclick=()=>{
+  try{
+    err('splitErr');
+    let c=parseCidr($('parentCidr').value);
+    let count=Number($('splitCount').value);
+    if(!Number.isInteger(count)||count<1)throw Error('Subnet count must be a positive integer.');
+    let borrowedBits=Math.ceil(Math.log2(count));
+    let newPrefix=c.p+borrowedBits;
+    if(newPrefix>32)throw Error('That many subnets will not fit in the parent block.');
+    let step=2**(32-newPrefix);
+    let roundedTotal=2**borrowedBits;
+    let parentEnd=c.network+(2**(32-c.p)-1);
+    let rows=[];
+    for(let i=0;i<roundedTotal;i++){
+      let net=(c.network+i*step)>>>0;
+      if(net>parentEnd)break;
+      rows.push({p:newPrefix,...subnetInfo(net,newPrefix)});
+    }
+    renderSubnetRows('splitRows',rows);
+  }catch(e){
+    err('splitErr',e.message);
+    $('splitRows').innerHTML='';
+  }
+};
 function neededPrefix(hosts){if(hosts<=0)throw Error('Host counts must be positive.');for(let p=32;p>=0;p--){let usable=p===32?1:p===31?2:2**(32-p)-2;if(usable>=hosts)return p}throw Error('Requirement is too large.')}
-$('vlsmBtn').onclick=()=>{try{err('vlsmErr');let parent=parseCidr($('vlsmParent').value), end=parent.network+2**(32-parent.p)-1, req=$('vlsmReq').value.split(/\n+/).map(l=>l.trim()).filter(Boolean).map(l=>{let m=l.match(/^(.+?)\s+(\d+)$/);if(!m)throw Error('Each VLSM line must be: name hosts');return{name:m[1],hosts:Number(m[2]),p:neededPrefix(Number(m[2]))}}).sort((a,b)=>a.p-b.p);let cur=parent.network, rows=[];for(const r of req){let size=2**(32-r.p);cur=Math.ceil(cur/size)*size;if(cur+size-1>end)throw Error('VLSM requirements do not fit inside the parent block.');let s=subnetInfo(cur,r.p);rows.push(tableRow([r.name,r.hosts,intToIp(s.network)+'/'+r.p,intToIp(s.network),intToIp(s.first)+' - '+intToIp(s.last),intToIp(s.broadcast)]));cur+=size}$('vlsmRows').innerHTML=rows.join('')}catch(e){err('vlsmErr',e.message);$('vlsmRows').innerHTML=''}};
+function parseVlsmRequirements(text){
+  return text.split(/\n+/).map(l=>l.trim()).filter(Boolean).map(line=>{
+    let m=line.match(/^(.+?)\s+(\d+)$/);
+    if(!m)throw Error('Each VLSM line must be: name hosts');
+    let hosts=Number(m[2]);
+    return{name:m[1],hosts,p:neededPrefix(hosts)};
+  }).sort((a,b)=>a.p-b.p);
+}
+$('vlsmBtn').onclick=()=>{
+  try{
+    err('vlsmErr');
+    let parent=parseCidr($('vlsmParent').value);
+    let parentEnd=parent.network+2**(32-parent.p)-1;
+    let req=parseVlsmRequirements($('vlsmReq').value);
+    let cursor=parent.network;
+    let rows=[];
+    for(const r of req){
+      let size=2**(32-r.p);
+      cursor=Math.ceil(cursor/size)*size;
+      if(cursor+size-1>parentEnd)throw Error('VLSM requirements do not fit inside the parent block.');
+      let s=subnetInfo(cursor,r.p);
+      rows.push(tableRow([
+        r.name,r.hosts,intToIp(s.network)+'/'+r.p,intToIp(s.network),
+        intToIp(s.first)+' - '+intToIp(s.last),intToIp(s.broadcast)
+      ]));
+      cursor+=size;
+    }
+    $('vlsmRows').innerHTML=rows.join('');
+  }catch(e){
+    err('vlsmErr',e.message);
+    $('vlsmRows').innerHTML='';
+  }
+};
 let drill=null, score=0, asked=0, streak=0;
 function randIp(){return ((Math.random()*TWO32)>>>0)}
 $('newQ').onclick=()=>{let min=Number($('drillMin').value),max=Number($('drillMax').value);if(min>max)[min,max]=[max,min];min=Math.max(1,Math.min(32,min));max=Math.max(1,Math.min(32,max));let p=min+Math.floor(Math.random()*(max-min+1)), ip=randIp(), s=subnetInfo(ip,p);drill={ip,p,s};$('question').textContent=`Find network details for ${intToIp(ip)}/${p}`;$('drillFeedback').className='answer';$('drillFeedback').textContent='';['ansNetwork','ansBroadcast','ansFirst','ansLast'].forEach(id=>$(id).value='')};
-$('checkQ').onclick=()=>{if(!drill){$('newQ').click();return}let s=drill.s, answers={ansNetwork:s.network,ansBroadcast:s.broadcast,ansFirst:s.first,ansLast:s.last};let ok=true;for(const id in answers){try{if(ipToInt($(id).value)!==answers[id])ok=false}catch{ok=false}}asked++;if(ok){score++;streak++}else streak=0;$('score').textContent=score;$('asked').textContent=asked;$('streak').textContent=streak;let b=block(drill.p), oct=(drill.ip>>>(8*(4-b.octet)))&255, base=Math.floor(oct/b.size)*b.size;$('drillFeedback').className='answer '+(ok?'good':'bad');$('drillFeedback').innerHTML=`<b>${ok?'Correct':'Not quite'}.</b> Network ${intToIp(s.network)}, first ${intToIp(s.first)}, last ${intToIp(s.last)}, broadcast ${intToIp(s.broadcast)}.<br>Worked math: /${drill.p} leaves ${32-drill.p} host bits. Block size is ${b.size} in octet ${b.octet}. Target octet ${oct}; ${oct} ÷ ${b.size} = ${Math.floor(oct/b.size)} remainder ${oct%b.size}, so the subnet starts at ${base} and the next block starts at ${base+b.size}.`};
-function parseIPv6(addr){addr=String(addr).trim().toLowerCase();if(!addr||addr.includes(':::'))throw Error('Enter a valid IPv6 address.');let ipv4=null;if(addr.includes('.')){let last=addr.substring(addr.lastIndexOf(':')+1);let n=ipToInt(last);ipv4=[(n>>>16)&0xffff,n&0xffff];addr=addr.substring(0,addr.lastIndexOf(':'))+':'+ipv4.map(x=>x.toString(16)).join(':')}let parts;if(addr.includes('::')){let [l,r]=addr.split('::');let left=l?l.split(':'):[], right=r?r.split(':'):[];let miss=8-left.length-right.length;if(miss<1)throw Error('Invalid IPv6 compression.');parts=[...left,...Array(miss).fill('0'),...right]}else parts=addr.split(':');if(parts.length!==8)throw Error('IPv6 addresses must contain 8 hextets after expansion.');return parts.map(h=>{if(!/^[0-9a-f]{1,4}$/.test(h))throw Error('Invalid IPv6 hextet.');return parseInt(h,16)})}
+function answerMatches(expected){
+  let ok=true;
+  for(const id in expected){
+    try{
+      if(ipToInt($(id).value)!==expected[id])ok=false;
+    }catch{
+      ok=false;
+    }
+  }
+  return ok;
+}
+function updateDrillScore(ok){
+  asked++;
+  if(ok){score++;streak++;}else streak=0;
+  $('score').textContent=score;
+  $('asked').textContent=asked;
+  $('streak').textContent=streak;
+}
+$('checkQ').onclick=()=>{
+  if(!drill){$('newQ').click();return;}
+  let s=drill.s;
+  let ok=answerMatches({
+    ansNetwork:s.network,
+    ansBroadcast:s.broadcast,
+    ansFirst:s.first,
+    ansLast:s.last
+  });
+  updateDrillScore(ok);
+  let b=block(drill.p);
+  let octetValue=(drill.ip>>>(8*(4-b.octet)))&255;
+  let base=Math.floor(octetValue/b.size)*b.size;
+  $('drillFeedback').className='answer '+(ok?'good':'bad');
+  $('drillFeedback').innerHTML=`<b>${ok?'Correct':'Not quite'}.</b> Network ${intToIp(s.network)}, first ${intToIp(s.first)}, last ${intToIp(s.last)}, broadcast ${intToIp(s.broadcast)}.<br>Worked math: /${drill.p} leaves ${32-drill.p} host bits. Block size is ${b.size} in octet ${b.octet}. Target octet ${octetValue}; ${octetValue} ÷ ${b.size} = ${Math.floor(octetValue/b.size)} remainder ${octetValue%b.size}, so the subnet starts at ${base} and the next block starts at ${base+b.size}.`;
+};
+function parseIPv6(addr){
+  addr=String(addr).trim().toLowerCase();
+  if(!addr||addr.includes(':::'))throw Error('Enter a valid IPv6 address.');
+  if(addr.includes('.')){
+    let last=addr.substring(addr.lastIndexOf(':')+1);
+    let n=ipToInt(last);
+    let ipv4Hextets=[(n>>>16)&0xffff,n&0xffff];
+    addr=addr.substring(0,addr.lastIndexOf(':'))+':'+ipv4Hextets.map(x=>x.toString(16)).join(':');
+  }
+  let parts;
+  if(addr.includes('::')){
+    let [leftText,rightText]=addr.split('::');
+    let left=leftText?leftText.split(':'):[];
+    let right=rightText?rightText.split(':'):[];
+    let missing=8-left.length-right.length;
+    if(missing<1)throw Error('Invalid IPv6 compression.');
+    parts=[...left,...Array(missing).fill('0'),...right];
+  }else{
+    parts=addr.split(':');
+  }
+  if(parts.length!==8)throw Error('IPv6 addresses must contain 8 hextets after expansion.');
+  return parts.map(h=>{
+    if(!/^[0-9a-f]{1,4}$/.test(h))throw Error('Invalid IPv6 hextet.');
+    return parseInt(h,16);
+  });
+}
 function expandIPv6(a){return parseIPv6(a).map(h=>h.toString(16).padStart(4,'0')).join(':')}
-function compressIPv6(a){let h=typeof a==='string'?parseIPv6(a):a.slice(), s=h.map(x=>x.toString(16));let bestStart=-1,bestLen=0;for(let i=0;i<8;){if(h[i]){i++;continue}let j=i;while(j<8&&!h[j])j++;if(j-i>bestLen&&j-i>1){bestStart=i;bestLen=j-i}i=j}if(bestStart>=0)s.splice(bestStart,bestLen,'');let out=s.join(':');if(bestStart===0)out=':'+out;if(bestStart+bestLen===8)out+=':';return out||'::'}
+function compressIPv6(a){
+  let h=typeof a==='string'?parseIPv6(a):a.slice();
+  let text=h.map(x=>x.toString(16));
+  let bestStart=-1;
+  let bestLen=0;
+  for(let i=0;i<8;){
+    if(h[i]){i++;continue;}
+    let j=i;
+    while(j<8&&!h[j])j++;
+    if(j-i>bestLen&&j-i>1){
+      bestStart=i;
+      bestLen=j-i;
+    }
+    i=j;
+  }
+  if(bestStart>=0)text.splice(bestStart,bestLen,'');
+  let out=text.join(':');
+  if(bestStart===0)out=':'+out;
+  if(bestStart+bestLen===8)out+=':';
+  return out||'::';
+}
 function ipv6Type(h){let first=h[0];if(h.every(x=>x===0))return'Unspecified';if(h.slice(0,7).every(x=>x===0)&&h[7]===1)return'Loopback';if((first&0xffc0)===0xfe80)return'Link-local unicast';if((first&0xfe00)===0xfc00)return'Unique local (ULA)';if((first&0xff00)===0xff00)return'Multicast';if(first>=0x2000&&first<=0x3fff)return h[0]===0x2001&&h[1]===0xdb8?'Documentation (2001:db8::/32)':'Global unicast';return'Other/reserved'}
 function macBytes(s){let hex=String(s).toLowerCase().replace(/[^0-9a-f]/g,'');if(hex.length!==12)throw Error('Enter a 48-bit MAC address.');return hex.match(/../g).map(x=>parseInt(x,16))}
 function fmtMac(b,sep=':'){return b.map(x=>x.toString(16).padStart(2,'0')).join(sep)}
@@ -61,7 +231,43 @@ $('ipv6Btn').onclick=()=>{try{err('ipv6Err');let h=parseIPv6($('ipv6Addr').value
 $('euiBtn').onclick=()=>{try{err('euiErr');let m=macBytes($('euiMac').value), before=m[0].toString(2).padStart(8,'0');m[0]^=2;let after=m[0].toString(2).padStart(8,'0'), e=[m[0],m[1],m[2],0xff,0xfe,m[3],m[4],m[5]], iid=[(e[0]<<8)|e[1],(e[2]<<8)|e[3],(e[4]<<8)|e[5],(e[6]<<8)|e[7]].map(x=>x.toString(16).padStart(4,'0')).join(':');$('euiResults').innerHTML=[metric('Interface ID',iid),metric('Bit 7 flip',`${before} → ${after}`),metric('EUI-64 bytes',fmtMac(e))].join('')}catch(e){err('euiErr',e.message);$('euiResults').innerHTML=''}};
 function parseIPv6Cidr(s){let m=String(s).trim().match(/^(.+)\/(\d{1,3})$/);if(!m)throw Error('Use IPv6 CIDR like 2001:db8::/48.');let p=Number(m[2]);if(p<0||p>128)throw Error('IPv6 prefix must be /0 through /128.');return{h:parseIPv6(m[1]),p}}
 $('prefixBtn').onclick=()=>{try{err('prefixErr');let c=parseIPv6Cidr($('prefixPlan').value), np=Number($('prefixNew').value);if(np<c.p||np>128)throw Error('New prefix must be between parent prefix and /128.');let count=2n**BigInt(np-c.p);let host=2n**BigInt(128-np);$('prefixResults').innerHTML=[metric('Child prefix',`/${np}`),metric('Number of child prefixes',count.toLocaleString()),metric('Addresses per child',host.toLocaleString()),metric('Parent normalized',compressIPv6(c.h)+'/'+c.p)].join('')}catch(e){err('prefixErr',e.message);$('prefixResults').innerHTML=''}};
-$('maskBtn').onclick=()=>{try{err('maskErr');let v=$('maskConv').value.trim(), p, mask;if(/^\/?\d{1,2}$/.test(v)){p=Number(v.replace('/',''));if(p<0||p>32)throw Error('Prefix must be /0 through /32.');mask=maskFromPrefix(p)}else{let n=ipToInt(v), inv=(~n)>>>0;let contiguous=x=>/^1*0*$/.test(x.toString(2).padStart(32,'0'));if(contiguous(n)){mask=n;p=n.toString(2).replace(/0/g,'').length}else if(contiguous(inv)){mask=inv;p=inv.toString(2).replace(/0/g,'').length}else throw Error('Mask or wildcard must be contiguous.')}$('maskResults').innerHTML=[metric('Prefix','/'+p),metric('Mask',intToIp(mask)),metric('Wildcard',intToIp((~mask)>>>0))].join('')}catch(e){err('maskErr',e.message);$('maskResults').innerHTML=''}};
+function isContiguousMask(n){
+  return /^1*0*$/.test(n.toString(2).padStart(32,'0'));
+}
+function prefixLengthFromMask(n){
+  return n.toString(2).padStart(32,'0').replace(/0/g,'').length;
+}
+$('maskBtn').onclick=()=>{
+  try{
+    err('maskErr');
+    let value=$('maskConv').value.trim();
+    let p;
+    let mask;
+    if(/^\/?\d{1,2}$/.test(value)){
+      p=Number(value.replace('/',''));
+      if(p<0||p>32)throw Error('Prefix must be /0 through /32.');
+      mask=maskFromPrefix(p);
+    }else{
+      let n=ipToInt(value);
+      let inverted=(~n)>>>0;
+      if(isContiguousMask(n)){
+        mask=n;
+        p=prefixLengthFromMask(n);
+      }else if(isContiguousMask(inverted)){
+        mask=inverted;
+        p=prefixLengthFromMask(inverted);
+      }else throw Error('Mask or wildcard must be contiguous.');
+    }
+    $('maskResults').innerHTML=[
+      metric('Prefix','/'+p),
+      metric('Mask',intToIp(mask)),
+      metric('Wildcard',intToIp((~mask)>>>0))
+    ].join('');
+  }catch(e){
+    err('maskErr',e.message);
+    $('maskResults').innerHTML='';
+  }
+};
 $('macBtn').onclick=()=>{try{err('macErr');let b=macBytes($('macConv').value), first=b[0].toString(2).padStart(8,'0');$('macResults').innerHTML=[metric('Colon',fmtMac(b,':')),metric('Hyphen',fmtMac(b,'-')),metric('Cisco dotted',b.map(x=>x.toString(16).padStart(2,'0')).join('').match(/.{4}/g).join('.')),metric('I/G bit',(b[0]&1)?'Multicast/group':'Unicast/individual'),metric('U/L bit',(b[0]&2)?'Locally administered':'Universally administered'),metric('First octet binary',first)].join('')}catch(e){err('macErr',e.message);$('macResults').innerHTML=''}};
 $('numBtn').onclick=()=>{try{err('numErr');let s=$('numConv').value.trim().toLowerCase(), n=s.startsWith('0x')?parseInt(s,16):s.startsWith('0b')?parseInt(s.slice(2),2):Number(s);if(!Number.isFinite(n)||n<0)throw Error('Enter a non-negative decimal, 0x hex, or 0b binary number.');n=Math.trunc(n);$('numResults').innerHTML=[metric('Decimal',n.toString(10)),metric('Hex','0x'+n.toString(16).toUpperCase()),metric('Binary','0b'+n.toString(2))].join('')}catch(e){err('numErr',e.message);$('numResults').innerHTML=''}};
 const refs={
