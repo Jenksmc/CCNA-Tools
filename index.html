@@ -495,14 +495,17 @@ WAN-B, 2</textarea>
       if (bestStart === -1) return groups.map((g) => g.toString(16)).join(':');
       const left = groups.slice(0, bestStart).map((g) => g.toString(16)).join(':');
       const right = groups.slice(bestStart + bestLen).map((g) => g.toString(16)).join(':');
-      return `${left}::${right}`.replace(/^:/, '::').replace(/:$/, '::').replace(':::', '::');
+      if (!left && !right) return '::';
+      if (!left) return `::${right}`;
+      if (!right) return `${left}::`;
+      return `${left}::${right}`;
     }
     function classifyIPv6(groups) {
       const big = groupsToBig(groups);
       if (big === 0n) return 'Unspecified (::)';
       if (big === 1n) return 'Loopback (::1)';
       if ((big >> 120n) === 0xffn) return 'Multicast (ff00::/8)';
-      if ((big >> 118n) === 0xfen >> 6n) return 'Link-local unicast (fe80::/10)';
+      if ((big >> 118n) === 0b1111111010n) return 'Link-local unicast (fe80::/10)';
       if ((big >> 121n) === 0xfcn >> 1n) return 'Unique local (fc00::/7)';
       if ((big >> 96n) === 0x20010db8n) return 'Documentation (2001:db8::/32)';
       if ((big >> 125n) === 0b001n) return 'Global unicast (2000::/3)';
