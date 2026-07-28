@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CCNA Networking Toolkit</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f8fb;
+      --panel: #ffffff;
+      --panel-2: #eef3fa;
+      --text: #172033;
+      --muted: #607089;
+      --border: #d7e0ec;
+      --accent: #2364d2;
+      --accent-2: #0f9f8f;
+      --bad: #b42318;
+      --good: #067647;
+      --warn: #a15c07;
+      --shadow: 0 12px 34px rgba(31, 45, 61, .12);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      --sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0d1117;
+        --panel: #151b23;
+        --panel-2: #0f1621;
+        --text: #e6edf3;
+        --muted: #9aa7b5;
+        --border: #303946;
+        --accent: #6ea8ff;
+        --accent-2: #4fd1c5;
+        --bad: #ff8a80;
+        --good: #68d391;
+        --warn: #f6c177;
+        --shadow: 0 16px 44px rgba(0, 0, 0, .35);
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--sans); line-height: 1.5; }
+    header { padding: 2rem clamp(1rem, 4vw, 3rem) 1rem; background: linear-gradient(135deg, var(--panel), var(--panel-2)); border-bottom: 1px solid var(--border); }
+    main { padding: 1rem clamp(1rem, 4vw, 3rem) 3rem; max-width: 1380px; margin: 0 auto; }
+    h1 { margin: 0 0 .35rem; font-size: clamp(2rem, 5vw, 3.5rem); letter-spacing: -.04em; }
+    h2 { margin-top: 0; }
+    h3 { margin: 1rem 0 .5rem; }
+    .lede { margin: 0; color: var(--muted); max-width: 70rem; }
+    .tabs { display: flex; gap: .5rem; flex-wrap: wrap; margin: 1rem 0; position: sticky; top: 0; background: color-mix(in srgb, var(--bg) 92%, transparent); padding: .6rem 0; z-index: 3; backdrop-filter: blur(8px); }
+    .tab { border: 1px solid var(--border); background: var(--panel); color: var(--text); padding: .7rem .9rem; border-radius: 999px; cursor: pointer; font-weight: 650; }
+    .tab[aria-selected="true"] { background: var(--accent); border-color: var(--accent); color: white; }
+    .panel { display: none; background: var(--panel); border: 1px solid var(--border); border-radius: 22px; padding: clamp(1rem, 3vw, 2rem); box-shadow: var(--shadow); }
+    .panel.active { display: block; }
+    .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); }
+    .card { border: 1px solid var(--border); border-radius: 16px; background: var(--panel-2); padding: 1rem; }
+    label { display: block; font-weight: 700; margin: .7rem 0 .25rem; }
+    input, select, textarea, button { font: inherit; }
+    input, select, textarea { width: 100%; padding: .7rem .8rem; border: 1px solid var(--border); border-radius: 12px; background: var(--panel); color: var(--text); }
+    textarea { min-height: 8.5rem; resize: vertical; font-family: var(--mono); }
+    input[type="range"] { padding: 0; }
+    button.primary, button.secondary { border: 0; border-radius: 12px; padding: .75rem 1rem; font-weight: 800; cursor: pointer; margin-top: .8rem; }
+    button.primary { background: var(--accent); color: white; }
+    button.secondary { background: var(--panel); color: var(--text); border: 1px solid var(--border); }
+    .result { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: .65rem; }
+    .metric { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: .8rem; overflow-wrap: anywhere; }
+    .metric span { display: block; color: var(--muted); font-size: .86rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+    .metric strong, code { font-family: var(--mono); }
+    code, pre { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; }
+    pre { padding: .85rem; overflow: auto; white-space: pre-wrap; }
+    .error { color: var(--bad); font-weight: 750; margin-top: .5rem; }
+    .ok { color: var(--good); font-weight: 750; }
+    .warn { color: var(--warn); font-weight: 750; }
+    .bit-ruler { display: grid; grid-template-columns: repeat(32, minmax(16px, 1fr)); gap: 2px; margin: 1rem 0; font-family: var(--mono); font-size: .75rem; text-align: center; }
+    .bit { padding: .35rem 0; border-radius: 6px; border: 1px solid var(--border); background: var(--panel); }
+    .bit.net { background: color-mix(in srgb, var(--accent) 28%, var(--panel)); border-color: var(--accent); }
+    .bit.host { background: color-mix(in srgb, var(--accent-2) 22%, var(--panel)); }
+    .bit.break { margin-right: 6px; }
+    .table-wrap { overflow: auto; border: 1px solid var(--border); border-radius: 16px; }
+    table { width: 100%; border-collapse: collapse; min-width: 680px; background: var(--panel); }
+    th, td { padding: .65rem .75rem; border-bottom: 1px solid var(--border); text-align: left; vertical-align: top; }
+    th { position: sticky; top: 0; background: var(--panel-2); z-index: 1; }
+    tr:last-child td { border-bottom: 0; }
+    .pill { display: inline-flex; align-items: center; gap: .25rem; border: 1px solid var(--border); border-radius: 999px; padding: .2rem .55rem; margin: .15rem; background: var(--panel); font-size: .88rem; }
+    .row { display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; }
+    .row > * { flex: 1 1 170px; }
+    .small { color: var(--muted); font-size: .92rem; }
+    .two-col { display: grid; gap: 1rem; grid-template-columns: 1fr 1fr; }
+    @media (max-width: 760px) { .two-col { grid-template-columns: 1fr; } .tabs { position: static; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>CCNA Networking Toolkit</h1>
+    <p class="lede">A single-file, offline-friendly networking engineer's toolkit. No dependencies, no fonts, no CDNs, and no network requests.</p>
+  </header>
+  <main>
+    <nav class="tabs" role="tablist" aria-label="Toolkit sections">
+      <button class="tab" role="tab" aria-controls="ipv4" aria-selected="true">IPv4 Subnet Dissector</button>
+      <button class="tab" role="tab" aria-controls="splitter" aria-selected="false">Splitter &amp; VLSM</button>
+      <button class="tab" role="tab" aria-controls="practice" aria-selected="false">Practice Drill</button>
+      <button class="tab" role="tab" aria-controls="ipv6" aria-selected="false">IPv6 Toolkit</button>
+      <button class="tab" role="tab" aria-controls="converters" aria-selected="false">Converters</button>
+      <button class="tab" role="tab" aria-controls="refs" aria-selected="false">Reference Tables</button>
+    </nav>
+
+    <section id="ipv4" class="panel active" role="tabpanel">
+      <h2>IPv4 Subnet Dissector</h2>
+      <div class="grid">
+        <div class="card">
+          <label for="ipv4Addr">IPv4 address</label>
+          <input id="ipv4Addr" value="192.168.10.42" inputmode="decimal" autocomplete="off">
+          <label for="ipv4Prefix">Prefix: /<span id="ipv4PrefixLabel">24</span></label>
+          <input id="ipv4Prefix" type="range" min="1" max="32" value="24">
+          <div id="ipv4Error" class="error" aria-live="polite"></div>
+          <div id="bitRuler" class="bit-ruler" aria-label="32-bit network and host ruler"></div>
+        </div>
+        <div class="card">
+          <div id="ipv4Result" class="result"></div>
+          <div id="ipv4Flags" aria-label="Address flags"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="splitter" class="panel" role="tabpanel">
+      <h2>Subnet Splitter and VLSM Allocator</h2>
+      <div class="two-col">
+        <div class="card">
+          <h3>Equal subnet split</h3>
+          <label for="splitParent">Parent block</label>
+          <input id="splitParent" value="192.168.1.0/24" autocomplete="off">
+          <label for="splitNewPrefix">New prefix</label>
+          <input id="splitNewPrefix" type="number" min="1" max="32" value="26">
+          <button id="splitBtn" class="primary">Split block</button>
+          <div id="splitError" class="error"></div>
+          <div id="splitOut" class="table-wrap"></div>
+        </div>
+        <div class="card">
+          <h3>VLSM allocator</h3>
+          <label for="vlsmParent">Parent block</label>
+          <input id="vlsmParent" value="10.10.0.0/24" autocomplete="off">
+          <label for="vlsmNeeds">Name, hosts needed (one per line)</label>
+          <textarea id="vlsmNeeds">Users, 60
+Voice, 30
+Servers, 12
+WAN-A, 2
+WAN-B, 2</textarea>
+          <button id="vlsmBtn" class="primary">Allocate VLSM</button>
+          <div id="vlsmError" class="error"></div>
+          <div id="vlsmOut" class="table-wrap"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="practice" class="panel" role="tabpanel">
+      <h2>Randomized Subnetting Practice Drill</h2>
+      <div class="grid">
+        <div class="card">
+          <div class="row">
+            <div><label for="practiceMin">Minimum prefix</label><input id="practiceMin" type="number" min="1" max="32" value="24"></div>
+            <div><label for="practiceMax">Maximum prefix</label><input id="practiceMax" type="number" min="1" max="32" value="30"></div>
+          </div>
+          <button id="newQuestion" class="primary">New question</button>
+          <p id="scoreLine" class="small">Score: 0/0 · Streak: 0</p>
+          <h3 id="questionText">Click “New question” to begin.</h3>
+          <label for="answerInput">Your answer</label>
+          <input id="answerInput" autocomplete="off" placeholder="Example: 192.168.1.0">
+          <button id="checkAnswer" class="primary">Check answer</button>
+          <div id="practiceFeedback"></div>
+        </div>
+        <div class="card">
+          <h3>Worked math</h3>
+          <pre id="practiceWork">The worked block-size math appears after each question.</pre>
+        </div>
+      </div>
+    </section>
+
+    <section id="ipv6" class="panel" role="tabpanel">
+      <h2>IPv6 Toolkit</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Address expand, compress, classify</h3>
+          <label for="ipv6Addr">IPv6 address</label>
+          <input id="ipv6Addr" value="2001:db8::1" autocomplete="off">
+          <button id="ipv6Btn" class="primary">Analyze IPv6</button>
+          <div id="ipv6Error" class="error"></div>
+          <div id="ipv6Out" class="result"></div>
+        </div>
+        <div class="card">
+          <h3>MAC to EUI-64</h3>
+          <label for="euiMac">MAC address</label>
+          <input id="euiMac" value="00:25:96:12:34:56" autocomplete="off">
+          <button id="euiBtn" class="primary">Build EUI-64</button>
+          <div id="euiError" class="error"></div>
+          <pre id="euiOut"></pre>
+        </div>
+        <div class="card">
+          <h3>Solicited-node multicast</h3>
+          <label for="solAddr">IPv6 unicast address</label>
+          <input id="solAddr" value="2001:db8::1234:5678" autocomplete="off">
+          <button id="solBtn" class="primary">Calculate multicast</button>
+          <div id="solError" class="error"></div>
+          <div id="solOut" class="result"></div>
+        </div>
+        <div class="card">
+          <h3>IPv6 prefix planner</h3>
+          <label for="planPrefix">Parent prefix</label>
+          <input id="planPrefix" value="2001:db8:abcd::/48" autocomplete="off">
+          <div class="row">
+            <div><label for="childLen">Child prefix length</label><input id="childLen" type="number" min="1" max="128" value="64"></div>
+            <div><label for="planCount">How many to show</label><input id="planCount" type="number" min="1" max="64" value="8"></div>
+          </div>
+          <button id="planBtn" class="primary">Plan prefixes</button>
+          <div id="planError" class="error"></div>
+          <div id="planOut" class="table-wrap"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="converters" class="panel" role="tabpanel">
+      <h2>Converters</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Mask ↔ Wildcard ↔ Prefix</h3>
+          <label for="maskInput">Enter prefix, mask, or wildcard</label>
+          <input id="maskInput" value="/24" autocomplete="off">
+          <button id="maskBtn" class="primary">Convert</button>
+          <div id="maskError" class="error"></div>
+          <div id="maskOut" class="result"></div>
+        </div>
+        <div class="card">
+          <h3>MAC address formats and bits</h3>
+          <label for="macInput">MAC address</label>
+          <input id="macInput" value="aabb.ccdd.eeff" autocomplete="off">
+          <button id="macBtn" class="primary">Convert MAC</button>
+          <div id="macError" class="error"></div>
+          <div id="macOut" class="result"></div>
+        </div>
+        <div class="card">
+          <h3>Decimal, hex, binary</h3>
+          <label for="numInput">Number</label>
+          <input id="numInput" value="172" autocomplete="off">
+          <button id="numBtn" class="primary">Convert number</button>
+          <div id="numError" class="error"></div>
+          <div id="numOut" class="result"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="refs" class="panel" role="tabpanel">
+      <h2>Filterable Reference Tables</h2>
+      <label for="refFilter">Filter all references</label>
+      <input id="refFilter" placeholder="Try: ospf, /24, private, tcp, etherchannel" autocomplete="off">
+      <div id="refTables"></div>
+    </section>
+  </main>
+
+  <script>
+    'use strict';
+
+    const $ = (id) => document.getElementById(id);
+    const IPv4_MAX = 0xffffffff;
+    const MAX_UNICAST_FIRST_OCTET = 223;
+    const OCTET_END_BIT_INDICES = [7, 15, 23];
+    const EUI64_GROUP_START_BYTES = [0, 2, 4, 6];
+    const IPV6_UNIQUE_LOCAL_PREFIX_BITS = 0b1111110n;
+    const IPV6_MULTICAST_MAC_PREFIX = [0x33, 0x33];
+    const SOLICITED_NODE_PREFIX = 0xff0200000000000000000001ff000000n;
+    const HTML_ENTITIES = {'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'};
+    let score = 0, attempts = 0, streak = 0, currentQuestion = null;
+
+    document.querySelectorAll('.tab').forEach((tab) => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach((t) => t.setAttribute('aria-selected', String(t === tab)));
+        document.querySelectorAll('.panel').forEach((p) => p.classList.toggle('active', p.id === tab.getAttribute('aria-controls')));
+      });
+    });
+
+    function metric(label, value) {
+      return `<div class="metric"><span>${escapeHtml(label)}</span><strong>${escapeHtml(String(value))}</strong></div>`;
+    }
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>'"]/g, (c) => HTML_ENTITIES[c]);
+    }
+    function parseIPv4(input) {
+      const parts = String(input).trim().split('.');
+      if (parts.length !== 4) throw new Error('Enter four decimal octets, for example 192.168.1.10.');
+      const nums = parts.map((part) => {
+        if (!/^\d{1,3}$/.test(part)) throw new Error('IPv4 octets must be decimal numbers.');
+        const n = Number(part);
+        if (n < 0 || n > 255) throw new Error('Each IPv4 octet must be between 0 and 255.');
+        return n;
+      });
+      return (((nums[0] << 24) >>> 0) + (nums[1] << 16) + (nums[2] << 8) + nums[3]) >>> 0;
+    }
+    function ipToString(ip) {
+      return [ip >>> 24, (ip >>> 16) & 255, (ip >>> 8) & 255, ip & 255].join('.');
+    }
+    function maskFromPrefix(prefix) {
+      if (prefix < 0 || prefix > 32) throw new Error('Prefix must be from /0 to /32.');
+      return prefix === 0 ? 0 : (IPv4_MAX << (32 - prefix)) >>> 0;
+    }
+    function prefixFromMask(mask) {
+      let seenZero = false, count = 0;
+      for (let i = 31; i >= 0; i--) {
+        const bit = (mask >>> i) & 1;
+        if (bit && seenZero) return null;
+        if (bit) count++; else seenZero = true;
+      }
+      return count;
+    }
+    function parseIPv4Block(value) {
+      const match = String(value).trim().match(/^([^/]+)\/(\d{1,2})$/);
+      if (!match) throw new Error('Use CIDR notation, for example 192.168.1.0/24.');
+      const ip = parseIPv4(match[1]);
+      const prefix = Number(match[2]);
+      if (prefix < 1 || prefix > 32) throw new Error('Prefix must be from /1 to /32.');
+      const mask = maskFromPrefix(prefix);
+      return { ip, prefix, mask, network: ip & mask, broadcast: (ip & mask) | (~mask >>> 0) };
+    }
+    function subnetInfo(ip, prefix) {
+      const mask = maskFromPrefix(prefix);
+      const wildcard = (~mask) >>> 0;
+      const network = ip & mask;
+      const broadcast = (network | wildcard) >>> 0;
+      const total = 2 ** (32 - prefix);
+      const usable = prefix === 32 ? 1 : prefix === 31 ? 2 : Math.max(0, total - 2);
+      const first = prefix >= 31 ? network : (network + 1) >>> 0;
+      const last = prefix >= 31 ? broadcast : (broadcast - 1) >>> 0;
+      const interestingOctetDisplay = prefix === 32 ? 'none (/32 host route)' : Math.floor(prefix / 8) + 1;
+      const blockSize = prefix % 8 === 0 ? 256 : 2 ** (8 - (prefix % 8));
+      return { mask, wildcard, network, broadcast, total, usable, first, last, interestingOctetDisplay, blockSize };
+    }
+    function ipv4Class(ip) {
+      const first = ip >>> 24;
+      if (first <= 127) return 'Class A';
+      if (first <= 191) return 'Class B';
+      if (first <= 223) return 'Class C';
+      if (first <= 239) return 'Class D multicast';
+      return 'Class E reserved';
+    }
+    function inRange(ip, cidr) {
+      const block = parseIPv4Block(cidr);
+      return (ip & block.mask) === block.network;
+    }
+    function ipv4Flags(ip) {
+      const flags = [];
+      if (inRange(ip, '10.0.0.0/8') || inRange(ip, '172.16.0.0/12') || inRange(ip, '192.168.0.0/16')) flags.push('RFC 1918 private');
+      if (inRange(ip, '169.254.0.0/16')) flags.push('APIPA / link-local');
+      if (inRange(ip, '100.64.0.0/10')) flags.push('CGNAT');
+      if (inRange(ip, '127.0.0.0/8')) flags.push('Loopback');
+      if (!flags.length) flags.push('Public or globally scoped (not RFC 1918/APIPA/CGNAT/loopback)');
+      return flags;
+    }
+    function renderIPv4() {
+      $('ipv4PrefixLabel').textContent = $('ipv4Prefix').value;
+      $('ipv4Error').textContent = '';
+      try {
+        const ip = parseIPv4($('ipv4Addr').value);
+        const prefix = Number($('ipv4Prefix').value);
+        const info = subnetInfo(ip, prefix);
+        $('ipv4Result').innerHTML = [
+          metric('Mask', ipToString(info.mask)), metric('Wildcard', ipToString(info.wildcard)), metric('Network', ipToString(info.network)),
+          metric('First usable', ipToString(info.first)), metric('Last usable', ipToString(info.last)), metric('Broadcast', ipToString(info.broadcast)),
+          metric('Block size', `${info.blockSize} in octet ${info.interestingOctetDisplay}`), metric('Usable hosts', info.usable.toLocaleString()), metric('Class', ipv4Class(ip))
+        ].join('');
+        $('ipv4Flags').innerHTML = ipv4Flags(ip).map((f) => `<span class="pill">${escapeHtml(f)}</span>`).join('');
+        renderBitRuler(prefix, ip);
+      } catch (err) {
+        $('ipv4Error').textContent = err.message;
+        $('ipv4Result').innerHTML = '';
+        $('ipv4Flags').innerHTML = '';
+        renderBitRuler(Number($('ipv4Prefix').value), 0);
+      }
+    }
+    function renderBitRuler(prefix, ip) {
+      $('bitRuler').innerHTML = Array.from({ length: 32 }, (_, i) => {
+        const bit = (ip >>> (31 - i)) & 1;
+        const cls = i < prefix ? 'net' : 'host';
+        return `<div class="bit ${cls} ${OCTET_END_BIT_INDICES.includes(i) ? 'break' : ''}" title="bit ${i + 1}: ${cls}">${bit}</div>`;
+      }).join('');
+    }
+
+    function table(headers, rows) {
+      return `<table><thead><tr>${headers.map((h) => `<th>${escapeHtml(h)}</th>`).join('')}</tr></thead><tbody>${rows.map((r) => `<tr>${r.map((c) => `<td>${escapeHtml(c)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+    }
+    function renderSplit() {
+      $('splitError').textContent = '';
+      try {
+        const parent = parseIPv4Block($('splitParent').value);
+        const newPrefix = Number($('splitNewPrefix').value);
+        if (newPrefix < parent.prefix || newPrefix > 32) throw new Error('New prefix must be greater than or equal to the parent prefix and no larger than /32.');
+        const childSize = 2 ** (32 - newPrefix);
+        const count = 2 ** (newPrefix - parent.prefix);
+        if (count > 4096) throw new Error('Too many subnets to display. Choose a less-specific new prefix.');
+        const rows = [];
+        for (let i = 0; i < count; i++) {
+          const net = (parent.network + i * childSize) >>> 0;
+          const info = subnetInfo(net, newPrefix);
+          rows.push([i + 1, `${ipToString(net)}/${newPrefix}`, ipToString(info.first), ipToString(info.last), ipToString(info.broadcast), info.usable]);
+        }
+        $('splitOut').innerHTML = table(['#', 'Subnet', 'First usable', 'Last usable', 'Broadcast', 'Usable hosts'], rows);
+      } catch (err) { $('splitError').textContent = err.message; $('splitOut').innerHTML = ''; }
+    }
+    function prefixForHosts(hosts) {
+      if (hosts < 1) throw new Error('Host requirements must be positive numbers.');
+      if (hosts === 1) return 32;
+      if (hosts === 2) return 31;
+      return 32 - Math.ceil(Math.log2(hosts + 2));
+    }
+    function alignToBlockBoundary(value, size) {
+      // Add the remainder needed to advance to the next subnet-size multiple.
+      return value + ((size - (value % size)) % size);
+    }
+    function renderVlsm() {
+      $('vlsmError').textContent = '';
+      try {
+        const parent = parseIPv4Block($('vlsmParent').value);
+        const needs = $('vlsmNeeds').value.split('\n').map((line) => line.trim()).filter(Boolean).map((line) => {
+          const parts = line.split(',');
+          if (parts.length !== 2) throw new Error(`Invalid line: ${line}. Use Name, hosts.`);
+          const hosts = Number(parts[1].trim());
+          if (!Number.isInteger(hosts) || hosts < 1) throw new Error(`Invalid host count on line: ${line}.`);
+          return { name: parts[0].trim() || 'Unnamed', hosts, prefix: prefixForHosts(hosts) };
+        }).sort((a, b) => a.prefix - b.prefix || b.hosts - a.hosts);
+        let cursor = parent.network;
+        const rows = [];
+        for (const need of needs) {
+          const size = 2 ** (32 - need.prefix);
+          cursor = alignToBlockBoundary(cursor, size);
+          const end = cursor + size - 1;
+          if (end > parent.broadcast) throw new Error('Requirements do not fit in the parent block.');
+          const info = subnetInfo(cursor, need.prefix);
+          rows.push([need.name, need.hosts, `/${need.prefix}`, `${ipToString(cursor)}/${need.prefix}`, ipToString(info.first), ipToString(info.last), ipToString(info.broadcast), info.usable]);
+          cursor = end + 1;
+        }
+        $('vlsmOut').innerHTML = table(['Name', 'Needed', 'Prefix', 'Network', 'First', 'Last', 'Broadcast', 'Usable'], rows);
+      } catch (err) { $('vlsmError').textContent = err.message; $('vlsmOut').innerHTML = ''; }
+    }
+
+    const questionTypes = ['network', 'broadcast', 'first usable', 'last usable', 'mask', 'wildcard'];
+    function randomIntInclusive(min, max) {
+      return min + Math.floor(Math.random() * (max - min + 1));
+    }
+    function randomIp() {
+      const first = randomIntInclusive(1, MAX_UNICAST_FIRST_OCTET);
+      const second = Math.floor(Math.random() * 256);
+      const third = Math.floor(Math.random() * 256);
+      const fourth = Math.floor(Math.random() * 256);
+      return ((first << 24) | (second << 16) | (third << 8) | fourth) >>> 0;
+    }
+    function newPracticeQuestion() {
+      const min = Number($('practiceMin').value), max = Number($('practiceMax').value);
+      if (min < 1 || max > 32 || min > max) { $('practiceFeedback').innerHTML = '<p class="error">Use a valid prefix range from /1 to /32.</p>'; return; }
+      const prefix = min + Math.floor(Math.random() * (max - min + 1));
+      const ip = randomIp();
+      const type = questionTypes[Math.floor(Math.random() * questionTypes.length)];
+      const info = subnetInfo(ip, prefix);
+      const answers = { network: ipToString(info.network), broadcast: ipToString(info.broadcast), 'first usable': ipToString(info.first), 'last usable': ipToString(info.last), mask: ipToString(info.mask), wildcard: ipToString(info.wildcard) };
+      currentQuestion = { ip, prefix, type, answer: answers[type], info };
+      $('questionText').textContent = `For ${ipToString(ip)}/${prefix}, what is the ${type}?`;
+      $('answerInput').value = '';
+      $('practiceFeedback').textContent = '';
+      $('practiceWork').textContent = workMath(currentQuestion);
+    }
+    function workMath(q) {
+      const p = q.prefix;
+      const octet = Math.floor(p / 8) + 1;
+      const borrowed = p % 8;
+      const block = borrowed === 0 ? 256 : 2 ** (8 - borrowed);
+      return `Prefix /${p}\nInteresting octet: ${p === 32 ? 'none (/32)' : octet}\nBlock size: ${borrowed === 0 ? '256 (boundary prefix)' : `256 - mask octet, or 2^(8-${borrowed}) = ${block}`}\nNetwork: ${ipToString(q.info.network)}\nBroadcast: ${ipToString(q.info.broadcast)}\nUsable range: ${ipToString(q.info.first)} - ${ipToString(q.info.last)}\nMask: ${ipToString(q.info.mask)}\nWildcard: ${ipToString(q.info.wildcard)}`;
+    }
+    function checkPractice() {
+      if (!currentQuestion) newPracticeQuestion();
+      if (!currentQuestion) return;
+      attempts++;
+      const given = $('answerInput').value.trim().toLowerCase();
+      const expected = currentQuestion.answer.toLowerCase();
+      const correct = given === expected;
+      if (correct) { score++; streak++; } else { streak = 0; }
+      $('scoreLine').textContent = `Score: ${score}/${attempts} · Streak: ${streak}`;
+      $('practiceFeedback').innerHTML = correct ? '<p class="ok">Correct.</p>' : `<p class="error">Not quite. Correct answer: <code>${escapeHtml(currentQuestion.answer)}</code></p>`;
+      $('practiceWork').textContent = workMath(currentQuestion);
+    }
+
+    function parseIPv6(input) {
+      const value = String(input).trim().toLowerCase();
+      if (!value || value.includes(':::')) throw new Error('Enter a valid IPv6 address.');
+      const parts = value.split('::');
+      if (parts.length > 2) throw new Error('Only one :: compression marker is allowed.');
+      const left = parts[0] ? parts[0].split(':') : [];
+      const right = parts.length === 2 && parts[1] ? parts[1].split(':') : [];
+      const groups = [];
+      for (const group of [...left, ...right]) {
+        if (!/^[0-9a-f]{1,4}$/.test(group)) throw new Error('IPv6 groups must be 1 to 4 hexadecimal digits.');
+      }
+      const missing = parts.length === 2 ? 8 - left.length - right.length : 0;
+      if (parts.length === 1 && left.length !== 8) throw new Error('Uncompressed IPv6 addresses must contain 8 groups.');
+      if (missing < 0) throw new Error('Too many IPv6 groups.');
+      left.forEach((g) => groups.push(parseInt(g, 16)));
+      for (let i = 0; i < missing; i++) groups.push(0);
+      right.forEach((g) => groups.push(parseInt(g, 16)));
+      if (groups.length !== 8) throw new Error('IPv6 address must expand to 8 groups.');
+      return groups;
+    }
+    function groupsToBig(groups) { return groups.reduce((acc, group) => (acc << 16n) + BigInt(group), 0n); }
+    function bigToGroups(value) {
+      const groups = [];
+      for (let i = 7; i >= 0; i--) groups.push(Number((value >> BigInt(i * 16)) & 0xffffn));
+      return groups;
+    }
+    function expandIPv6(groups) { return groups.map((g) => g.toString(16).padStart(4, '0')).join(':'); }
+    function compressIPv6(groups) {
+      let bestStart = -1, bestLen = 0, start = -1, len = 0;
+      for (let i = 0; i <= 8; i++) {
+        if (i < 8 && groups[i] === 0) { if (start === -1) start = i; len++; }
+        else { if (len > bestLen && len > 1) { bestStart = start; bestLen = len; } start = -1; len = 0; }
+      }
+      if (bestStart === -1) return groups.map((g) => g.toString(16)).join(':');
+      const left = groups.slice(0, bestStart).map((g) => g.toString(16)).join(':');
+      const right = groups.slice(bestStart + bestLen).map((g) => g.toString(16)).join(':');
+      if (!left && !right) return '::';
+      if (!left) return `::${right}`;
+      if (!right) return `${left}::`;
+      return `${left}::${right}`;
+    }
+    function classifyIPv6(groups) {
+      const big = groupsToBig(groups);
+      if (big === 0n) return 'Unspecified (::)';
+      if (big === 1n) return 'Loopback (::1)';
+      if ((big >> 120n) === 0xffn) return 'Multicast (ff00::/8)';
+      if ((big >> 118n) === 0b1111111010n) return 'Link-local unicast (fe80::/10)';
+      if ((big >> 121n) === IPV6_UNIQUE_LOCAL_PREFIX_BITS) return 'Unique local (fc00::/7)';
+      if ((big >> 96n) === 0x20010db8n) return 'Documentation (2001:db8::/32)';
+      if ((big >> 125n) === 0b001n) return 'Global unicast (2000::/3)';
+      return 'Reserved or special-purpose';
+    }
+    function renderIPv6() {
+      $('ipv6Error').textContent = '';
+      try {
+        const groups = parseIPv6($('ipv6Addr').value);
+        $('ipv6Out').innerHTML = [metric('Expanded', expandIPv6(groups)), metric('Compressed', compressIPv6(groups)), metric('Type', classifyIPv6(groups))].join('');
+      } catch (err) { $('ipv6Error').textContent = err.message; $('ipv6Out').innerHTML = ''; }
+    }
+    function parseMac(input) {
+      const hex = String(input).trim().replace(/[-:.]/g, '').toLowerCase();
+      if (!/^[0-9a-f]{12}$/.test(hex)) throw new Error('Enter a 48-bit MAC address.');
+      return hex.match(/../g).map((b) => parseInt(b, 16));
+    }
+    function macFormats(bytes) {
+      const pairs = bytes.map((b) => b.toString(16).padStart(2, '0'));
+      return { colon: pairs.join(':'), hyphen: pairs.join('-'), dotted: `${pairs[0]}${pairs[1]}.${pairs[2]}${pairs[3]}.${pairs[4]}${pairs[5]}` };
+    }
+    function renderEui() {
+      $('euiError').textContent = '';
+      try {
+        const mac = parseMac($('euiMac').value);
+        const flipped = mac[0] ^ 0x02;
+        const eui = [flipped, mac[1], mac[2], 0xff, 0xfe, mac[3], mac[4], mac[5]];
+        const groups = EUI64_GROUP_START_BYTES.map((i) => ((eui[i] << 8) | eui[i + 1]).toString(16).padStart(4, '0'));
+        $('euiOut').textContent = `Original first byte: ${mac[0].toString(2).padStart(8, '0')}\nFlip U/L bit (bit 1): ${flipped.toString(2).padStart(8, '0')}\nInsert ff:fe in the middle\nInterface ID: ${groups.join(':')}`;
+      } catch (err) { $('euiError').textContent = err.message; $('euiOut').textContent = ''; }
+    }
+    function renderSolicited() {
+      $('solError').textContent = '';
+      try {
+        const groups = parseIPv6($('solAddr').value);
+        const big = groupsToBig(groups);
+        const last24 = big & 0xffffffn;
+        const mcast = SOLICITED_NODE_PREFIX | last24;
+        const mGroups = bigToGroups(mcast);
+        const bytes = [...IPV6_MULTICAST_MAC_PREFIX, 0xff, Number((last24 >> 16n) & 255n), Number((last24 >> 8n) & 255n), Number(last24 & 255n)];
+        $('solOut').innerHTML = [metric('Solicited-node multicast', compressIPv6(mGroups)), metric('Mapped L2 multicast', macFormats(bytes).colon)].join('');
+      } catch (err) { $('solError').textContent = err.message; $('solOut').innerHTML = ''; }
+    }
+    function parseIPv6Prefix(input) {
+      const match = String(input).trim().match(/^(.+)\/(\d{1,3})$/);
+      if (!match) throw new Error('Use IPv6 CIDR notation, for example 2001:db8::/48.');
+      const length = Number(match[2]);
+      if (length < 1 || length > 128) throw new Error('Prefix length must be 1 to 128.');
+      const value = groupsToBig(parseIPv6(match[1]));
+      const mask = ((1n << BigInt(length)) - 1n) << BigInt(128 - length);
+      return { length, network: value & mask };
+    }
+    function renderPlan() {
+      $('planError').textContent = '';
+      try {
+        const parent = parseIPv6Prefix($('planPrefix').value);
+        const child = Number($('childLen').value), count = Number($('planCount').value);
+        if (child < parent.length || child > 128) throw new Error('Child length must be at least the parent length and no larger than /128.');
+        if (count < 1 || count > 64) throw new Error('Show count must be between 1 and 64.');
+        const total = 1n << BigInt(child - parent.length);
+        if (BigInt(count) > total) throw new Error(`Parent /${parent.length} only supports ${total.toString()} child /${child} prefixes, but ${count} were requested.`);
+        const step = 1n << BigInt(128 - child);
+        const rows = [];
+        for (let i = 0; i < count; i++) rows.push([i + 1, `${compressIPv6(bigToGroups(parent.network + BigInt(i) * step))}/${child}`]);
+        $('planOut').innerHTML = table(['#', 'Prefix'], rows);
+      } catch (err) { $('planError').textContent = err.message; $('planOut').innerHTML = ''; }
+    }
+
+    function renderMask() {
+      $('maskError').textContent = '';
+      try {
+        const raw = $('maskInput').value.trim();
+        let prefix;
+        if (/^\/?\d{1,2}$/.test(raw)) {
+          prefix = Number(raw.replace('/', ''));
+        } else {
+          const ip = parseIPv4(raw);
+          const maskPrefix = prefixFromMask(ip);
+          const wildcardPrefix = prefixFromMask((~ip) >>> 0);
+          if (maskPrefix !== null) prefix = maskPrefix;
+          else if (wildcardPrefix !== null) prefix = wildcardPrefix;
+          else throw new Error('Input is not a contiguous mask or wildcard.');
+        }
+        if (prefix < 0 || prefix > 32) throw new Error('Prefix must be from /0 to /32.');
+        const mask = maskFromPrefix(prefix);
+        $('maskOut').innerHTML = [metric('Prefix', `/${prefix}`), metric('Mask', ipToString(mask)), metric('Wildcard', ipToString((~mask) >>> 0))].join('');
+      } catch (err) { $('maskError').textContent = err.message; $('maskOut').innerHTML = ''; }
+    }
+    function renderMac() {
+      $('macError').textContent = '';
+      try {
+        const bytes = parseMac($('macInput').value);
+        const f = macFormats(bytes);
+        const first = bytes[0];
+        $('macOut').innerHTML = [
+          metric('Colon', f.colon),
+          metric('Hyphen', f.hyphen),
+          metric('Cisco dotted', f.dotted),
+          metric('I/G bit', (first & 1) ? 'Group / multicast' : 'Individual / unicast'),
+          metric('U/L bit', (first & 2) ? 'Locally administered' : 'Universally administered')
+        ].join('');
+      } catch (err) { $('macError').textContent = err.message; $('macOut').innerHTML = ''; }
+    }
+    function renderNumber() {
+      $('numError').textContent = '';
+      try {
+        const raw = $('numInput').value.trim().toLowerCase();
+        const n = raw.startsWith('0x') ? parseInt(raw, 16) : raw.startsWith('0b') ? parseInt(raw.slice(2), 2) : Number(raw);
+        if (!Number.isInteger(n) || n < 0) throw new Error('Enter a non-negative integer, 0x hex, or 0b binary value.');
+        $('numOut').innerHTML = [metric('Decimal', n), metric('Hex', `0x${n.toString(16).toUpperCase()}`), metric('Binary', `0b${n.toString(2)}`)].join('');
+      } catch (err) { $('numError').textContent = err.message; $('numOut').innerHTML = ''; }
+    }
+
+    const refs = {
+      'CIDR chart': Array.from({ length: 33 }, (_, p) => {
+        const mask = maskFromPrefix(p), total = p === 32 ? 1 : 2 ** (32 - p), usable = p === 32 ? 1 : p === 31 ? 2 : Math.max(0, total - 2);
+        return [`/${p}`, ipToString(mask), ipToString((~mask) >>> 0), total.toLocaleString(), usable.toLocaleString()];
+      }),
+      'Special IPv4 ranges': [['10.0.0.0/8', 'RFC 1918 private'], ['172.16.0.0/12', 'RFC 1918 private'], ['192.168.0.0/16', 'RFC 1918 private'], ['169.254.0.0/16', 'APIPA link-local'], ['100.64.0.0/10', 'Carrier-grade NAT'], ['127.0.0.0/8', 'Loopback'], ['224.0.0.0/4', 'Multicast'], ['255.255.255.255/32', 'Limited broadcast']],
+      'IPv6 address types': [['::/128', 'Unspecified'], ['::1/128', 'Loopback'], ['2000::/3', 'Global unicast'], ['2001:db8::/32', 'Documentation'], ['fc00::/7', 'Unique local'], ['fe80::/10', 'Link-local'], ['ff00::/8', 'Multicast']],
+      'Syslog severity': [['0', 'Emergency'], ['1', 'Alert'], ['2', 'Critical'], ['3', 'Error'], ['4', 'Warning'], ['5', 'Notification'], ['6', 'Informational'], ['7', 'Debugging']],
+      'Administrative distance': [['Connected', '0'], ['Static', '1'], ['EIGRP summary', '5'], ['External BGP', '20'], ['Internal EIGRP', '90'], ['OSPF', '110'], ['RIP', '120'], ['External EIGRP', '170'], ['Internal BGP', '200']],
+      'Common ports': [['FTP data/control', '20/21 TCP'], ['SSH', '22 TCP'], ['Telnet', '23 TCP'], ['SMTP', '25 TCP'], ['DNS', '53 TCP/UDP'], ['DHCP server/client', '67/68 UDP'], ['TFTP', '69 UDP'], ['HTTP', '80 TCP'], ['POP3', '110 TCP'], ['NTP', '123 UDP'], ['SNMP', '161/162 UDP'], ['HTTPS', '443 TCP'], ['Syslog', '514 UDP']],
+      'Media distance limits': [['Copper Ethernet', '100 m'], ['1000BASE-SX MMF', '220-550 m'], ['1000BASE-LX SMF', '5 km typical'], ['10GBASE-SR MMF', '300-400 m'], ['10GBASE-LR SMF', '10 km']],
+      'STP costs': [['10 Mbps', '100'], ['100 Mbps', '19'], ['1 Gbps', '4'], ['10 Gbps', '2'], ['Short path cost 10 Mbps', '2,000,000'], ['Short path cost 100 Mbps', '200,000'], ['Short path cost 1 Gbps', '20,000'], ['Short path cost 10 Gbps', '2,000']],
+      'EtherChannel mode combinations': [['on + on', 'Forms static channel'], ['active + active', 'Forms LACP'], ['active + passive', 'Forms LACP'], ['passive + passive', 'Does not form'], ['desirable + desirable', 'Forms PAgP'], ['desirable + auto', 'Forms PAgP'], ['auto + auto', 'Does not form']]
+    };
+    const refHeaders = {
+      'CIDR chart': ['Prefix', 'Mask', 'Wildcard', 'Total addresses', 'Usable hosts'],
+      'Special IPv4 ranges': ['Range', 'Purpose'], 'IPv6 address types': ['Range', 'Purpose'], 'Syslog severity': ['Level', 'Name'],
+      'Administrative distance': ['Route source', 'AD'], 'Common ports': ['Service', 'Port/protocol'], 'Media distance limits': ['Media', 'Distance'],
+      'STP costs': ['Link speed', 'Cost'], 'EtherChannel mode combinations': ['Modes', 'Result']
+    };
+    function renderRefs() {
+      const q = $('refFilter').value.trim().toLowerCase();
+      $('refTables').innerHTML = Object.entries(refs).map(([title, rows]) => {
+        const filtered = rows.filter((row) => !q || `${title} ${row.join(' ')}`.toLowerCase().includes(q));
+        if (!filtered.length) return '';
+        return `<h3>${escapeHtml(title)}</h3><div class="table-wrap">${table(refHeaders[title], filtered)}</div>`;
+      }).join('') || '<p class="small">No matching reference rows.</p>';
+    }
+
+    $('ipv4Addr').addEventListener('input', renderIPv4);
+    $('ipv4Prefix').addEventListener('input', renderIPv4);
+    $('splitBtn').addEventListener('click', renderSplit);
+    $('vlsmBtn').addEventListener('click', renderVlsm);
+    $('newQuestion').addEventListener('click', newPracticeQuestion);
+    $('checkAnswer').addEventListener('click', checkPractice);
+    $('answerInput').addEventListener('keydown', (event) => { if (event.key === 'Enter') checkPractice(); });
+    $('ipv6Btn').addEventListener('click', renderIPv6);
+    $('euiBtn').addEventListener('click', renderEui);
+    $('solBtn').addEventListener('click', renderSolicited);
+    $('planBtn').addEventListener('click', renderPlan);
+    $('maskBtn').addEventListener('click', renderMask);
+    $('macBtn').addEventListener('click', renderMac);
+    $('numBtn').addEventListener('click', renderNumber);
+    $('refFilter').addEventListener('input', renderRefs);
+
+    renderIPv4();
+    renderSplit();
+    renderVlsm();
+    renderIPv6();
+    renderEui();
+    renderSolicited();
+    renderPlan();
+    renderMask();
+    renderMac();
+    renderNumber();
+    renderRefs();
+  </script>
+</body>
+</html>
